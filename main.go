@@ -21,6 +21,7 @@ var c = struct {
 	Interval time.Duration `opts:"help=polling interval"`
 	Token    string        `opts:"short=t,env,help=cloudflare token"`
 	Domain   string        `opts:"short=d,env,help=domain"`
+	DryRun   bool          `opts:"help=only print dns updates"`
 }{
 	Interval: 5 * time.Minute,
 }
@@ -111,6 +112,9 @@ func run(z zone, d record) error {
 }
 
 func update(z zone, d record, newIP string) error {
+	if c.DryRun {
+		log.Printf("[DRYRUN] skip update record %s to %s", d.Name, newIP)
+	}
 	if err := cf("PUT", "/zones/"+z.ID+"/dns_records/"+d.ID, &d, nil); err != nil {
 		return fmt.Errorf("updating %s to %s failed: %s", d.Name, newIP, err)
 	}
