@@ -18,9 +18,12 @@ import (
 )
 
 var c = struct {
-	Token  string `opts:"short=t,env,help=cloudflare token"`
-	Domain string `opts:"short=d,env,help=domain"`
-}{}
+	Interval time.Duration `opts:"help=polling interval"`
+	Token    string        `opts:"short=t,env,help=cloudflare token"`
+	Domain   string        `opts:"short=d,env,help=domain"`
+}{
+	Interval: 5 * time.Minute,
+}
 
 func main() {
 	opts.New(&c).Parse()
@@ -69,45 +72,49 @@ func prep() (z zone, d record, err error) {
 		return z, d, err
 	}
 	//get records, find target
-	domain := record{}
+	d = record{}
 	for _, r := range records {
 		if r.Name == target {
-			domain = r
+			d = r
 			break
 		}
 	}
-	if domain.Name == "" {
+	if d.Name == "" {
 		return z, d, errors.New("cannot DNS record for " + target)
 	}
+	log.Printf("found record %s (%s)", d.Name, d.Content)
 	return z, d, nil
 }
 
 func run(z zone, d record) error {
-	//get public ip
-	last, err := myIP()
-	if err != nil {
-		return err
-	}
-	log.Printf("watching public ip (%s) for changes", last)
+	first := true
 	for {
-		time.Sleep(5 * time.Minute)
-
-		//get public ip again,
-
-		//changed?
-
-		// if err := update(domain, ""); err != nil {
-		// 	return err
-		// }
+		//get public ip
+		public, err := myIP()
+		if err != nil {
+			return err
+		}
+		//status message
+		if first {
+			log.Printf("watching public ip (%s) for changes...", public)
+			first = false
+		}
+		// changed?
+		if d.Content != public {
+			d.Content = public
+			if err := update(z, d, public); err != nil {
+				return err
+			}
+		}
+		time.Sleep(c.Interval)
 	}
 }
 
 func update(z zone, d record, newIP string) error {
-	d.Content = newIP
 	if err := cf("PUT", "/zones/"+z.ID+"/dns_records/"+d.ID, &d, nil); err != nil {
-		return err
+		return fmt.Errorf("updating %s to %s failed: %s", d.Name, newIP, err)
 	}
-	//TODO check output
+	log.Printf("updated record %s to %s", d.Name, newIP)
 	return nil
 }
 
@@ -124,7 +131,7 @@ type record struct {
 	TTL     int    `json:"ttl"`
 }
 
-//cf is a basic client
+//cf is a basic client for the v4 api
 func cf(method, url string, input, output interface{}) error {
 	wrapper := struct {
 		Result  interface{} `json:"result"`
@@ -165,7 +172,7 @@ func cf(method, url string, input, output interface{}) error {
 				return errors.New(e.Message)
 			}
 		}
-		return errors.New("err")
+		return errors.New("unknown error")
 	}
 	return nil
 }
