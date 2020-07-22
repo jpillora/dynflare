@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/jpillora/media-sort/workflows/CI/badge.svg)](https://github.com/jpillora/media-sort/actions?workflow=CI)
 
-[DynamicDNS](https://en.wikipedia.org/wiki/Dynamic_DNS) using Cloudflare
+[Dynamic DNS](https://en.wikipedia.org/wiki/Dynamic_DNS) using Cloudflare. Periodically fetch your public IP address and ensure update the given `domain`'s A record to match it. Useful for keep
 
 ### Install
 
@@ -56,7 +56,7 @@ WantedBy=default.target
 
 * How do I get a token?
     * Visit https://dash.cloudflare.com/profile/api-tokens
-    * Create an API Token (**not** an API Key)
+    * Create an API Token with minimal scope (**not** an API Key)
 
 #### MIT License
 
