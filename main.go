@@ -15,6 +15,8 @@ import (
 	"github.com/jpillora/opts"
 )
 
+var version = "0.0.0-src"
+
 var c = struct {
 	Interval time.Duration `opts:"help=polling interval"`
 	Token    string        `opts:"short=t,env,help=cloudflare token"`
@@ -25,7 +27,7 @@ var c = struct {
 }
 
 func main() {
-	opts.New(&c).Parse()
+	opts.New(&c).Version(version).Parse()
 	z, d, err := prep()
 	if err != nil {
 		log.Fatal(err)

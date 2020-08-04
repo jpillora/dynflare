@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/jpillora/dynflare/workflows/CI/badge.svg)](https://github.com/jpillora/dynflare/actions?workflow=CI)
 
-[Dynamic DNS](https://en.wikipedia.org/wiki/Dynamic_DNS) using Cloudflare. Periodically fetch your public IP address and ensure update the given `domain`'s A record to match it. Useful for keep
+[Dynamic DNS](https://en.wikipedia.org/wiki/Dynamic_DNS) using Cloudflare. Periodically fetch your public IP address and ensure update the given `domain`'s A record to match it. Useful if your ISP don't provide static IPs.
 
 ### Install
 
@@ -42,7 +42,7 @@ $ cat dynflare.service
 Description=dynflare
 
 [Service]
-Environment=DOMAIN=foobar.jpillora.com
+Environment=DOMAIN=foobar.company.com
 Environment=TOKEN=MySuperSecretToken
 ExecStart=/usr/local/bin/dynflare
 Restart=always
@@ -50,6 +50,9 @@ RestartSec=3
 
 [Install]
 WantedBy=default.target
+$ systemctl enable dynflare
+$ systemctl start dynflare
+$ systemctl status dynflare
 ```
 
 ### FAQ
