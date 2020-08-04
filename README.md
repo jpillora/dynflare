@@ -1,6 +1,6 @@
 # dynflare
 
-[![CI](https://github.com/jpillora/media-sort/workflows/CI/badge.svg)](https://github.com/jpillora/media-sort/actions?workflow=CI)
+[![CI](https://github.com/jpillora/dynflare/workflows/CI/badge.svg)](https://github.com/jpillora/dynflare/actions?workflow=CI)
 
 [Dynamic DNS](https://en.wikipedia.org/wiki/Dynamic_DNS) using Cloudflare. Periodically fetch your public IP address and ensure update the given `domain`'s A record to match it. Useful for keep
 

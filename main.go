@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/jpillora/go-tld"
+	"github.com/jpillora/ipflare"
 	"github.com/jpillora/opts"
 )
 
@@ -91,19 +89,23 @@ func run(z zone, d record) error {
 	first := true
 	for {
 		//get public ip
-		public, err := myIP()
+		public, err := ipflare.My()
 		if err != nil {
 			return err
 		}
+		if public.To4() == nil {
+			return fmt.Errorf("public ip is v6 (%s) only v4 supported", public)
+		}
+		ip := public.String()
 		//status message
 		if first {
-			log.Printf("watching public ip (%s) for changes...", public)
+			log.Printf("watching public ip (%s) for changes...", ip)
 			first = false
 		}
 		// changed?
-		if d.Content != public {
-			d.Content = public
-			if err := update(z, d, public); err != nil {
+		if d.Content != ip {
+			d.Content = ip
+			if err := update(z, d, ip); err != nil {
 				return err
 			}
 		}
@@ -179,31 +181,4 @@ func cf(method, url string, input, output interface{}) error {
 		return errors.New("unknown error")
 	}
 	return nil
-}
-
-var myIPre = regexp.MustCompile(`<span>Your IP</span>: ([\w+\.:]+)</span>`)
-
-func myIP() (string, error) {
-	resp, err := http.Get("https://www.cloudflare.com/learning/dns/glossary/what-is-my-ip-address/")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	m := myIPre.FindSubmatch(b)
-	if len(m) == 0 {
-		return "", errors.New("my-ip not found on page")
-	}
-	s := string(m[1])
-	ip := net.ParseIP(s)
-	if ip == nil {
-		return "", fmt.Errorf("my-ip invalid (%s)", s)
-	}
-	if ip.To4() == nil {
-		return "", fmt.Errorf("my-ip invalid ipv4 (%s)", s)
-	}
-	return ip.String(), nil
 }
