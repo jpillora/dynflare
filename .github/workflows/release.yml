@@ -10,14 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@master
-      - name: List
-        run: ls -lah
-      - name: Git
-        run: git status
+        uses: actions/checkout@v2
       - name: goreleaser
         if: success()
-        uses: docker://goreleaser/goreleaser:latest
+        uses: docker://goreleaser/goreleaser:v1.9.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
