@@ -12,7 +12,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@master
       - name: List
-         run: ls -lah
+        run: ls -lah
       - name: goreleaser
         if: success()
         uses: docker://goreleaser/goreleaser:latest
