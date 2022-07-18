@@ -1,7 +1,8 @@
 on:
   push:
-    tags:
-      - "v*"
+    branch: [master]
+    # tags:
+    #   - "v*"
 name: CI
 jobs:
   release:
@@ -10,10 +11,12 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@master
+      - name: List
+         run: ls -lah
       - name: goreleaser
+        if: success()
         uses: docker://goreleaser/goreleaser:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: release --config .github/goreleaser.yml
-        if: success()
